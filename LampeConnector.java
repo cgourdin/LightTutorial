@@ -71,15 +71,27 @@ public class LampeConnector extends light.impl.LampeImpl
 	 * Called when this Lampe instance must be retrieved.
 	 */
 	@Override
-	public void occiRetrieve()
-	{
+	public void occiRetrieve() {
 		LOGGER.debug("occiRetrieve() called on " + this);
-		// TODO : This method will be used to update an entity from his real kind.
-//		try {
-//			lightClient.find(this.getId());
-//		} catch (IOException | TimeoutException ex) {
-//			LOGGER.error("Error while finding a light : " + ex.getMessage());
-//		}
+		try {
+			String light = lightClient.retrieve(this.getId());
+			// Parse the response.
+			if (light != null) {
+				String[] lightTab = light.split(";");
+				// String id = lightTab[0];
+				String location = lightTab[1];
+				String state = lightTab[2];
+				// update this light resource.
+				this.setSummary(location);
+				if (state.equals("on")) {
+					this.setState(State.ON);
+				} else {
+					this.setState(State.OFF);
+				}
+			}
+		} catch (IOException | TimeoutException ex) {
+			LOGGER.error("Error while retrieving a light : " + ex.getMessage());
+		}
 	}
 
 	/**
